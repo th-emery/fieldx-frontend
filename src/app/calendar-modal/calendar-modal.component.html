@@ -1,0 +1,21 @@
+<div class="custom-modal">
+    <div class="modal-content">
+        <h2 mat-dialog-title>Nouvelle réunion</h2>
+        <mat-dialog-content>
+            <div style="margin-bottom: 20px">
+                <span>{{ data.start | dateFormatter }} - {{ data.end | dateFormatter }}</span>
+            </div>
+            <form [formGroup]="form">
+                <mat-form-field appearance="fill">
+                    <mat-label>Objet de la réunion</mat-label>
+                    <input matInput formControlName="topic"/>
+                    <mat-error *ngIf="form.get('topic')?.hasError('required')">L'objet est requis</mat-error>
+                </mat-form-field>
+            </form>
+        </mat-dialog-content>
+        <mat-dialog-actions>
+            <button mat-button (click)="dialogRef.close()">Annuler</button>
+            <button mat-button color="primary" (click)="closeModal()" [disabled]="form.invalid">Sauvegarder</button>
+        </mat-dialog-actions>
+    </div>
+</div>

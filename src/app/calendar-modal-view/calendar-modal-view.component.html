@@ -1,0 +1,20 @@
+<div class="custom-modal">
+    <div class="modal-content">
+        <h2 mat-dialog-title>{{ data.event.title }}</h2>
+        <mat-dialog-content>
+            <div style="margin-bottom: 20px">
+                <span>{{ data.event.start | dateFormatter }} - {{ data.event.end | dateFormatter }}</span>
+            </div>
+            <div style="margin-bottom: 20px">
+                <a [href]="data.event.extendedProps.zoomStartUrl" target="_blank">URL de la réunion</a>
+            </div>
+            <div style="margin-bottom: 20px">
+                <span>Mot de passe : {{ data.event.extendedProps.zoomPwd }}</span>
+            </div>
+        </mat-dialog-content>
+        <mat-dialog-actions>
+            <button mat-button (click)="closeModal()">Supprimer</button>
+            <button mat-button (click)="dialogRef.close()">Fermer</button>
+        </mat-dialog-actions>
+    </div>
+</div>
