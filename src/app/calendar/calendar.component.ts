@@ -27,12 +27,13 @@ export class CalendarComponent {
         },
         initialEvents: [], // alternatively, use the `events` setting to fetch from a feed
         weekends: true,
-        editable: true,
-        eventResizableFromStart: false,
-        eventDurationEditable: false,
+        editable: false,
         selectable: true,
         selectMirror: true,
         dayMaxEvents: true,
+        validRange: {
+            start: new Date().toISOString().split('T')[0], // AUJOURD'HUI
+        },
         select: this.handleDateSelect.bind(this),
         eventClick: this.handleEventClick.bind(this),
         eventsSet: this.handleEvents.bind(this),
@@ -49,44 +50,51 @@ export class CalendarComponent {
 
     handleDateSelect(selectInfo: DateSelectArg) {
         const calendarApi = selectInfo.view.calendar;
-        //calendarApi.unselect(); // clear date selection
-        const dialogRef = this.dialog.open(CalendarModalComponent, {
-            data: { start: selectInfo.startStr, end: selectInfo.endStr }
-        });
-        // SOUSCRIRE A LA FERMETURE DE LA MODALE
-        dialogRef.afterClosed().subscribe(result => {
-            if (result) {
-                const meetingData = {
-                    topic: result.topic,
-                    start_time: selectInfo.startStr,
-                    duration: 30 // A AMELIORER POUR QUE CE SOIT DYNAMIQUE
-                };
-                this.zoomService.createZoomMeeting(meetingData).subscribe({
-                    next: (response) => {
-                        console.log('Meeting Zoom créé avec succès:', response);
-                        // AFFICHER L'EVENT
-                        calendarApi.addEvent({
-                            id: Date.now().toString(),
-                            title: result.topic,
-                            start: selectInfo.startStr,
-                            end: selectInfo.endStr,
-                            allDay: selectInfo.allDay,
-                            extendedProps: {
-                                zoomId: response.data.id,
-                                zoomStartUrl: response.data.start_url,
-                                zoomPwd: response.data.password
-                            }
-                        });
-                    },
-                    error: (error) => {
-                        console.error('Erreur lors de la création du Meeting Zoom:', error);
-                    }
-                });
+        // SUPPRIMER LA SELECTION DE L'EVENT
+        calendarApi.unselect();
+        // VERIFICATION SI EVENT DANS LE PASSE
+        if (selectInfo.start < new Date()) {
+            alert('Vous ne pouvez pas cliquer dans le passé.');
+        }
+        else {
+            const dialogRef = this.dialog.open(CalendarModalComponent, {
+                data: {start: selectInfo.startStr, end: selectInfo.endStr}
+            });
+            // SOUSCRIRE A LA FERMETURE DE LA MODALE
+            dialogRef.afterClosed().subscribe(result => {
+                if (result) {
+                    const meetingData = {
+                        topic: result.topic,
+                        start_time: selectInfo.startStr,
+                        duration: 30 // A AMELIORER POUR QUE CE SOIT DYNAMIQUE
+                    };
+                    this.zoomService.createZoomMeeting(meetingData).subscribe({
+                        next: (response) => {
+                            console.log('Meeting Zoom créé avec succès:', response);
+                            // AFFICHER L'EVENT
+                            calendarApi.addEvent({
+                                id: Date.now().toString(),
+                                title: result.topic,
+                                start: selectInfo.startStr,
+                                end: selectInfo.endStr,
+                                allDay: selectInfo.allDay,
+                                extendedProps: {
+                                    zoomId: response.data.id,
+                                    zoomStartUrl: response.data.start_url,
+                                    zoomPwd: response.data.password
+                                }
+                            });
+                        },
+                        error: (error) => {
+                            console.error('Erreur lors de la création du Meeting Zoom:', error);
+                        }
+                    });
 
-            } else {
-                console.log('Aucune donnée retournée');
-            }
-        });
+                } else {
+                    console.log('Aucune donnée retournée');
+                }
+            });
+        }
     }
 
     handleEventClick(clickInfo: EventClickArg) {
